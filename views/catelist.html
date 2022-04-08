@@ -19,7 +19,7 @@
         <div class="layui-body">
             <!-- 内容主体区域 -->
             <div style="padding: 15px;">
-                <table class="layui-hide" id="test"></table>
+                <table class="layui-hide" id="test" lay-filter="test1"></table>
             </div>
         </div>
 
@@ -28,6 +28,10 @@
             底部固定区域
         </div>
     </div>
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+      </script>
     <script src="/static/layui/layui.js"></script>
     <script>
         //JS 
@@ -57,30 +61,47 @@
             });
 
             table.render({
-                elem: '#test'
-                , url: '/demo/table/user/'
-                , page: { //支持传入 laypage 组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
-                    layout: ['limit', 'count', 'prev', 'page', 'next', 'skip'] //自定义分页布局
-                    //,curr: 5 //设定初始在第 5 页
-                    , groups: 1 //只显示 1 个连续页码
-                    , first: false //不显示首页
-                    , last: false //不显示尾页
-
-                }
-                , cols: [[
-                    { field: 'id', width: 80, title: 'ID', sort: true }
-                    , { field: 'username', width: 100, title: '用户名' }
-                    , { field: 'sex', width: 80, title: '性别', sort: true }
-                    , { field: 'city', width: 80, title: '城市' }
-                    , { field: 'sign', title: '签名', minWidth: 150 }
-                    , { field: 'experience', width: 80, title: '积分', sort: true }
-                    , { field: 'score', width: 80, title: '评分', sort: true }
-                    , { field: 'classify', width: 80, title: '职业' }
-                    , { field: 'wealth', width: 135, title: '财富', sort: true }
+                elem: '#test',
+                url: '/cateData',
+                cols: [[
+                    { field: 'cate_id', width: 80, title: 'ID', sort: true },
+                    { field: 'cate_name', width: 100, edit: 'text', title: '分类名' },
+                    { field: 'orderBy', width: 80, title: '分类排序', edit: 'text', sort: true },
+                    { fixed: 'right', title: '操作', toolbar: '#barDemo', width: 150 }
                 ]]
-
             });
 
+            table.on('edit(test1)', function (obj) {
+                let update = {
+                    id: obj.data.cate_id,
+                    editKey: obj.field,
+                    editValue: obj.value
+                }
+                $.ajax({
+                    type: 'post',
+                    url: '/UpdateCateData',
+                    data: update
+                }).then((res) => {
+                    layer.msg(res.message);
+                })
+            });
+
+            table.on('tool(test1)', function (obj) {
+                var id = obj.data.cate_id;
+                if (obj.event === 'del') {
+                    layer.confirm('确定删除此分类吗', function (index) {
+                        $.ajax({
+                            type: 'get',
+                            url: `/deteleCateData?id=${id}`
+                        }).then((res) => {
+                            if (res.code = 200) {
+                                obj.del();
+                            }
+                        })
+                        layer.close(index);
+                    });
+                }
+            });
         });
     </script>
 </body>
