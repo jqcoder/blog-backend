@@ -7,7 +7,7 @@ connection.connect(function (err) {
     if (err) {
         throw err;
     }
-    console.log('Mysql连接成功');
+    console.log('Mysql connect success');
 });
 
 function query(sql) {
