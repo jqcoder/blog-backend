@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>杰杰后台管理系统</title>
+    <link rel="stylesheet" href="/static/layui/css/layui.css">
+</head>
+
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <!-- 导入头部子模板 -->
+        {{include "./common/header.html"}}
+
+        <!-- 导入侧边栏子模板 -->
+        {{include "./common/side.html"}}
+
+        <div class="layui-body">
+            <!-- 内容主体区域 -->
+            <div style="padding: 15px;">
+                <div style="width: 500px;">
+                    <form class="layui-form" lay-filter="formTest">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">博客名</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="blog_name" required lay-verify="required" placeholder="请输入标题"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <!-- <div class="layui-form-item">
+                            <label class="layui-form-label">主题</label>
+                            <div class="layui-input-block">
+                                <select name="city" lay-verify="required">
+                                    <option value="0">暗灰色</option>
+                                </select>
+                            </div>
+                        </div> -->
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-footer">
+            <!-- 底部固定区域 -->
+            底部固定区域
+        </div>
+    </div>
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+      </script>
+    <script src="/static/layui/layui.js"></script>
+    <script>
+        //JS 
+        layui.use(['element', 'layer', 'util', 'form'], async function () {
+            var element = layui.element
+                , layer = layui.layer
+                , util = layui.util
+                , $ = layui.$
+                , form = layui.form;
+
+            //头部事件
+            util.event('lay-header-event', {
+                //左侧菜单事件
+                menuLeft: function (othis) {
+                    layer.msg('展开左侧菜单的操作111', { icon: 0 });
+                }
+                , menuRight: function () {
+                    layer.open({
+                        type: 1
+                        , content: `<div style="padding: 15px;">处理右侧面板的操作234</div>`
+                        , area: ['260px', '100%']
+                        , offset: 'rt' //右上角
+                        , anim: 5
+                        , shadeClose: true
+                    });
+                }
+            });
+
+            //回显
+            let SysSettings = await $.get('/getSysSettings');
+            form.val("formTest", {
+                blog_name: SysSettings[0].val
+            });
+
+            // 设置提交
+            form.on('submit(formDemo)', function (data) {
+                $.ajax({
+                    type: 'post',
+                    url: '/setSysSettings',
+                    data: data.field
+                }).then((res) => {
+                    if (res.code === 200) {
+                        $('#blog_name').text(data.field.blog_name);
+                        localStorage.setItem('blog_name', data.field.blog_name);
+                        layer.msg('修改成功', { icon: 6 });
+                    }
+                })
+                return false;
+            });
+        });
+    </script>
+</body>
+
+</html>

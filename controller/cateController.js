@@ -20,13 +20,10 @@ cateController.cateData = async (req, res) => {
 }
 
 cateController.UpdateCateData = async (req, res) => {
-    let { id, editKey, editValue } = req.body;
-    let sql;
-    if (editKey === 'cate_name') {
-        sql = `update category set ${editKey}='${editValue}' where cate_id = ${id}`;
-    } else {
-        sql = `update category set ${editKey}= ${editValue} where cate_id = ${id}`;
-    }
+    let { cate_id, cate_name, orderBy } = req.body;
+
+    let sql = `update category set cate_name = '${cate_name}',orderBy = ${orderBy} where cate_id = ${cate_id}`;
+
     let updateRes = await query(sql);
     const resObj = {
         code: 200,
@@ -50,6 +47,21 @@ cateController.deteleCateData = async (req, res) => {
     if (deleteRes.affectedRows < 1) {
         resObj.code = 201
         resObj.message = '删除失败'
+    }
+    res.json(resObj);
+}
+
+cateController.addcCateData = async (req, res) => {
+    let { cate_name, orderBy } = req.body;
+    const sql = `insert into category (cate_name, orderBy ) values ('${cate_name}',${orderBy} )`;
+    let addRes = await query(sql);
+    const resObj = {
+        code: 200,
+        message: '添加成功'
+    }
+    if (addRes.affectedRows < 1) {
+        resObj.code = 201
+        resObj.message = '添加失败'
     }
     res.json(resObj);
 }

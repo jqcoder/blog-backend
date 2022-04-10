@@ -23,7 +23,16 @@ router.get('/cateData', cateController.cateData);
 router.post('/UpdateCateData', cateController.UpdateCateData);
 // 删除分类数据
 router.get('/deteleCateData', cateController.deteleCateData);
+// 添加分类数据
+router.post('/addcCateData', cateController.addcCateData);
 
+// 系统：
+// 设置系统页
+router.get('/editsystem', indexController.editsystem);
+// 获取系统设置
+router.get('/getSysSettings', indexController.getSysSettings);
+// 设置系统设置
+router.post('/setSysSettings', indexController.setSysSettings);
 
 // 登录验证
 router.post('/islogin', indexController.islogin);

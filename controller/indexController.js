@@ -13,9 +13,31 @@ indexController.login = (req, res) => {
     res.sendFile(path.resolve('views', 'login.html'));
 }
 
-indexController.test = (req, res) => {
-    res.sendFile(path.resolve('views', 'test.html'));
+indexController.editsystem = (req, res) => {
+    res.render(path.resolve('views', 'aditsystem.html'));
 }
+
+indexController.getSysSettings = async (req, res) => {
+    const sql = `select * from settings`;
+    let result = await query(sql);
+    res.json(result);
+}
+
+indexController.setSysSettings = async (req, res) => {
+    let { blog_name } = req.body;
+    const sql = `update settings set val = '${blog_name}' where id = 1`;
+    let deletedateRes = await query(sql);
+    const resObj = {
+        code: 200,
+        message: '修改成功'
+    }
+    if (deletedateRes.affectedRows < 1) {
+        resObj.code = 201
+        resObj.message = '修改失败'
+    }
+    res.json(resObj);
+}
+
 
 
 indexController.islogin = async (req, res) => {
@@ -37,7 +59,6 @@ indexController.islogin = async (req, res) => {
         status.massage = '登录失败'
     }
     res.json(status);
-
 }
 
 module.exports = indexController;

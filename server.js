@@ -5,6 +5,7 @@ const artTemplate = require('art-template');
 const express_template = require('express-art-template');
 
 
+
 //配置模板的路径
 app.set('views', __dirname + '/views/');
 //设置express_template模板后缀为.html的文件(不设这句话，模板文件的后缀默认是.art)
@@ -23,8 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 const router = require('./router/router.js');
 app.use(router);
 
+const { SERVER_PORT } = require('./config/config.js');
 
-
-app.listen(3800, () => {
-    console.log('port is 3800');
+app.listen(SERVER_PORT, () => {
+    console.log(`port is ${SERVER_PORT}`);
 })

@@ -1,7 +1,8 @@
+const { HOST, SQL_PORT, USER, PASSWORD, DATABASE } = require('./config.js');
 module.exports = {
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'root',
-    database: 'blog'
+    host: HOST,
+    port: SQL_PORT,
+    user: USER,
+    password: PASSWORD,
+    database: DATABASE
 }
