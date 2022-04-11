@@ -24,12 +24,12 @@
             <a href="javascript:;">
                 <img src="https://img2.baidu.com/it/u=1012304310,3936720750&fm=26&fmt=auto&gp=0.jpg"
                     class="layui-nav-img">
-                xiaoluo
+                <span id="username"></span>
             </a>
             <dl class="layui-nav-child">
                 <dd><a href="">个人信息</a></dd>
                 <dd><a href="">修改密码</a></dd>
-                <dd><a href="./login.html">退出</a></dd>
+                <dd><a href="javascript:;" id="exit">退出</a></dd>
             </dl>
         </li>
         <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
@@ -39,7 +39,26 @@
         </li>
     </ul>
 </div>
+<script src="https://cdn.bootcdn.net/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+<script src="/static/js/axios.min.js"></script>
 <script>
+    // 博客名
     let blog_name = localStorage.getItem('blog_name');
     document.getElementById('blog_name').innerHTML = blog_name;
+
+    // 用户名显示
+    let { username, avatar } = JSON.parse(Cookies.get('userinfo'));
+    document.getElementById('username').innerText = username;
+
+
+    document.getElementById('exit').onclick = function () {
+        axios({
+            method: 'get',
+            url: '/userExit'
+        }).then((res) => {
+            if (res.data.code === 200) {
+                location.href = '/login';
+            }
+        })
+    }
 </script>

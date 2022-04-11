@@ -1,10 +1,23 @@
 const path = require('path');
 const express = require('express');
 const app = express();
-const artTemplate = require('art-template');
+const router = require('./router/router.js');
 const express_template = require('express-art-template');
+const testLogin = require('./middleware/testLogin.js')
 
 
+const session = require('express-session');
+app.use(session({
+    name: 'session_login',
+    secret: "$kasmk22s&kasnnnsSn*%sj52",
+    cookie: {
+        path: '/',
+        maxAge: 60000 * 23
+    }
+}))
+
+// 防止翻墙
+app.use(testLogin)
 
 //配置模板的路径
 app.set('views', __dirname + '/views/');
@@ -21,7 +34,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 路由
-const router = require('./router/router.js');
 app.use(router);
 
 const { SERVER_PORT } = require('./config/config.js');
