@@ -18,7 +18,9 @@
 
         <div class="layui-body">
             <!-- 内容主体区域 -->
-            <div style="padding: 15px;">主页.</div>
+            <div style="padding: 15px;">
+                <div id="cateCharset" style="width: 600px;height:400px;"></div>
+            </div>
         </div>
 
         <div class="layui-footer">
@@ -26,7 +28,7 @@
             底部固定区域
         </div>
     </div>
-    <script src="/static/layui/layui.js"></script>
+    <script src="/static/js/echarts.js"></script>
     <script>
         //JS 
         layui.use(['element', 'layer', 'util'], async function () {
@@ -62,9 +64,44 @@
                 if (item.name === 'blog_name') {
                     return true;
                 }
-            });
+            })
             $('#blog_name').text(blog_name.val);
             localStorage.setItem('blog_name', blog_name.val);
+
+            //分类 可视化
+            // 获取分类数据
+            let cateTotal = await $.get('/getCateTotal');
+            let cateNum = [];
+            let cateName = [];
+            cateTotal.result.forEach(item => {
+                cateNum.push(item.total)
+                if (!item.cate_name) {
+                    item.cate_name = '未分类';
+                }
+                cateName.push(item.cate_name)
+            });
+            const cateCharset = echarts.init(document.getElementById('cateCharset'));
+            const cateCharsetOption = {
+                title: {
+                    text: '分类总和'
+                },
+                tooltip: {},
+                legend: {
+                    data: ['销量']
+                },
+                xAxis: {
+                    data: cateName
+                },
+                yAxis: {},
+                series: [
+                    {
+                        name: '数量',
+                        type: 'bar',
+                        data: cateNum
+                    }
+                ]
+            };
+            cateCharset.setOption(cateCharsetOption);
         });
     </script>
 </body>

@@ -1,3 +1,36 @@
+<style>
+    .layui-layer-title {
+        border-bottom-width: 0px;
+    }
+
+    #demo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .avatar {
+        display: flex;
+        column-gap: 20px;
+    }
+
+    .avatar button {
+        border-radius: 50px;
+        border: 1px solid #eceff4;
+        background-color: #fff;
+        border-radius: 20px;
+        line-height: 24px;
+        font-size: 14px;
+        padding: 0 5px;
+        cursor: pointer;
+    }
+
+    #fileBox {
+        display: none;
+    }
+</style>
+<script src="/static/layui/layui.js"></script>
 <div class="layui-header">
     <div class="layui-logo layui-hide-xs layui-bg-black" id="blog_name">小猪博客管理系统</div>
     <!-- 头部区域（可配合layui 已有的水平导航） -->
@@ -22,12 +55,11 @@
     <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item layui-hide layui-show-md-inline-block">
             <a href="javascript:;">
-                <img src="https://img2.baidu.com/it/u=1012304310,3936720750&fm=26&fmt=auto&gp=0.jpg"
-                    class="layui-nav-img">
+                <img src="" id="userPic" class="layui-nav-img">
                 <span id="username"></span>
             </a>
             <dl class="layui-nav-child">
-                <dd><a href="">个人信息</a></dd>
+                <dd><a href="JavaScript:;" id="userinfo">个人信息</a></dd>
                 <dd><a href="">修改密码</a></dd>
                 <dd><a href="javascript:;" id="exit">退出</a></dd>
             </dl>
@@ -39,18 +71,142 @@
         </li>
     </ul>
 </div>
+
+<script src="/static/js/jquery.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
 <script src="/static/js/axios.min.js"></script>
 <script>
+    // 获取用户信息
+    let { id, username, avatar, intro } = JSON.parse(Cookies.get('userinfo'));
+    $('#userPic').attr('src', `/pic/${avatar}`);
+
+    function userForm() {
+        let { id, username, avatar, intro } = JSON.parse(Cookies.get('userinfo'));
+        return `
+        <div  style="width: 400px; padding:20px 0;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">头像</label>
+                    <div class="layui-input-block">
+                        <div class="avatar">
+                            <input type="file" id="fileBox" onchange="ImgUpdate(this)">
+                            <img src="/pic/${avatar}" alt="" id="demo">
+                            <div>
+                                <button id="test">上传新头像</button>
+                                <p>支持jpg、png、gif格式</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账号名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" value="${username}" required lay-verify="required" placeholder="请输入标题" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">个人简介</label>
+                    <div class="layui-input-block">
+                    <textarea name="intro" id="introIpt" placeholder="请输入内容" class="layui-textarea">${intro}</textarea>     
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" id="setUsetInfo" lay-submit lay-filter="formDemo">立即修改</button>
+                    </div>
+                </div>
+        </div>
+    `
+    }
+
     // 博客名
     let blog_name = localStorage.getItem('blog_name');
     document.getElementById('blog_name').innerHTML = blog_name;
 
     // 用户名显示
-    let { username, avatar } = JSON.parse(Cookies.get('userinfo'));
     document.getElementById('username').innerText = username;
 
+    // 打开用户信息
+    document.getElementById('userinfo').onclick = function () {
+        layer.open({
+            type: 1,
+            title: '个人信息',
+            area: ['480px'], //宽高
+            shadeClose: true,
+            content: userForm(),
+        });
+    }
 
+    // 提交新个人信息
+    $(document).on('click', '#setUsetInfo', function () {
+        let dataObj = {
+            id: id,
+            username: document.querySelector('input[name="username"]').value,
+            intro: document.querySelector('textarea[name="intro"]').value,
+        }
+
+        $.ajax({
+            type: 'post',
+            url: '/setUsetInfo',
+            data: dataObj
+        }).then((res) => {
+            if (res.code === 200) {
+                document.getElementById('username').innerText = dataObj.username;
+                document.getElementById('introIpt').innerText = dataObj.intro;
+
+                intro = dataObj.intro;
+                layer.close(layer.index);
+                layer.msg('修改成功');
+            } else {
+                layer.msg('修改失败')
+            }
+        })
+        return false;
+    })
+
+    // 打开上传文件按钮
+    $(document).on('click', '#test', function () {
+        document.getElementById('fileBox').click();
+        return false;
+    })
+
+    $(document).on('click', '#demo', function () {
+        document.getElementById('fileBox').click();
+        return false;
+    })
+
+    // 头像上传
+    function ImgUpdate() {
+        let { avatar } = JSON.parse(Cookies.get('userinfo'));
+        let formData = new FormData();
+        formData.set('pic', fileBox.files[0]);
+        formData.set('oldpic', avatar);
+        formData.set('id', id);
+        $.ajax({
+            type: 'post',
+            url: '/updatePic',
+            data: formData,
+            processData: false,
+            contentType: false,
+        }).then((res) => {
+            if (res.code === 200) {
+                layer.msg('修改成功', { icon: 1 })
+                $('#userPic').attr('src', res.pic);
+                $('#demo').attr('src', res.pic);
+            }
+        })
+    }
+
+    // 修改密码
+    layer.open({
+        type: 1,
+        title: '个人信息',
+        area: ['480px'], //宽高
+        shadeClose: true,
+        content: userForm(),
+    });
+
+    // 退出
     document.getElementById('exit').onclick = function () {
         axios({
             method: 'get',
@@ -61,4 +217,6 @@
             }
         })
     }
+
+
 </script>

@@ -2,59 +2,91 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>杰杰后台管理系统</title>
-  <link rel="stylesheet" href="/static/layui/css/layui.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>杰杰后台管理系统</title>
+    <link rel="stylesheet" href="/static/layui/css/layui.css">
 </head>
 
 <body>
-  <div class="layui-layout layui-layout-admin">
-    <!-- 导入头部子模板 -->
-    {{include "./common/header.html"}}
+    <div class="layui-layout layui-layout-admin">
+        <!-- 导入头部子模板 -->
+        {{include "./common/header.html"}}
 
-    <!-- 导入侧边栏子模板 -->
-    {{include "./common/side.html"}}
+        <!-- 导入侧边栏子模板 -->
+        {{include "./common/side.html"}}
 
-    <div class="layui-body">
-      <!-- 内容主体区域 -->
-      <div style="padding: 15px;">文章列表</div>
+        <div class="layui-body">
+            <!-- 内容主体区域 -->
+            <div style="padding: 15px;">
+                <table class="layui-hide" id="articleTable" lay-filter="test"></table>
+            </div>
+        </div>
+
+        <div class="layui-footer">
+            <!-- 底部固定区域 -->
+            底部固定区域
+        </div>
     </div>
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    </script>
+    <script>
+        //JS 
+        layui.use(['element', 'layer', 'util', 'table'], function () {
+            let element = layui.element,
+                layer = layui.layer,
+                util = layui.util,
+                $ = layui.$,
+                table = layui.table;
 
-    <div class="layui-footer">
-      <!-- 底部固定区域 -->
-      底部固定区域
-    </div>
-  </div>
-  <script src="/static/layui/layui.js"></script>
-  <script>
-    //JS 
-    layui.use(['element', 'layer', 'util'], function () {
-      var element = layui.element
-        , layer = layui.layer
-        , util = layui.util
-        , $ = layui.$;
+            //头部事件
+            util.event('lay-header-event', {
+                //左侧菜单事件
+                menuLeft: function (othis) {
+                    layer.msg('展开左侧菜单的操作111', { icon: 0 });
+                }
+                , menuRight: function () {
+                    layer.open({
+                        type: 1
+                        , content: '<div style="padding: 15px;">处理右侧面板的操作234</div>'
+                        , area: ['260px', '100%']
+                        , offset: 'rt' //右上角
+                        , anim: 5
+                        , shadeClose: true
+                    });
+                }
+            });
 
-      //头部事件
-      util.event('lay-header-event', {
-        //左侧菜单事件
-        menuLeft: function (othis) {
-          layer.msg('展开左侧菜单的操作111', { icon: 0 });
-        }
-        , menuRight: function () {
-          layer.open({
-            type: 1
-            , content: '<div style="padding: 15px;">处理右侧面板的操作234</div>'
-            , area: ['260px', '100%']
-            , offset: 'rt' //右上角
-            , anim: 5
-            , shadeClose: true
-          });
-        }
-      });
-
-    });
-  </script>
+            // 文章列表
+            table.render({
+                elem: '#articleTable',
+                url: '/getArtAllData',
+                toolbar: '#toolbarDemo',//开启头部工具栏，并为其绑定左侧模板
+                defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                    title: '提示',
+                    layEvent: 'LAYTABLE_TIPS',
+                    icon: 'layui-icon-tips'
+                }],
+                title: '用户数据表', cols: [[
+                    { field: 'id', title: 'ID', width: '5%', unresize: true, sort: true },
+                    { field: 'title', title: '标题', width: '10%', edit: 'text' },
+                    {
+                        field: 'pic', title: '封面图', width: '10%', edit: 'text', sort: true, templet: ({ pic }) => {
+                            return `<img src="pic">`
+                        }
+                    },
+                    { field: 'author', title: '作者', width: '10%' },
+                    { field: 'content', title: '内容', width: '20%' },
+                    { field: 'status', title: '状态', width: '10%', sort: true },
+                    { field: 'add_date', title: '添加时间', width: '15%' },
+                    { field: 'cate_name', title: '分类', width: '10%', sort: true },
+                    { title: '操作', toolbar: '#barDemo', width: 152 }
+                ]],
+                page: true
+            });
+        });
+    </script>
 </body>
 
 </html>

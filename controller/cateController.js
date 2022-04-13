@@ -3,8 +3,6 @@ const query = require('../model/query.js');
 
 const cateController = {};
 
-
-
 cateController.index = (req, res) => {
     res.render(path.resolve('views', 'catelist.html'));
 }
@@ -64,6 +62,12 @@ cateController.addcCateData = async (req, res) => {
         resObj.message = '添加失败'
     }
     res.json(resObj);
+}
+
+cateController.getCateTotal = async (req, res) => {
+    const sql = `SELECT COUNT(t1.cate_id) total,t2.cate_name FROM article t1 LEFT JOIN category t2 on t1.cate_id = t2.cate_id GROUP BY t1.cate_id`;
+    let result = await query(sql);
+    res.json({ result })
 }
 
 

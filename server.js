@@ -1,10 +1,11 @@
 const path = require('path');
 const express = require('express');
 const app = express();
+const multer = require('multer');
 const router = require('./router/router.js');
 const express_template = require('express-art-template');
 const testLogin = require('./middleware/testLogin.js')
-
+const updateConfig = require('./config/updateConfig.js');
 
 const session = require('express-session');
 app.use(session({
@@ -15,6 +16,9 @@ app.use(session({
         maxAge: 60000 * 23
     }
 }))
+
+// 上传文件
+const storage = multer.diskStorage(updateConfig);
 
 // 防止翻墙
 app.use(testLogin)
@@ -28,6 +32,7 @@ app.set('view engine', 'html');
 
 // 托管静态文件
 app.use('/static', express.static(path.resolve('static/')));
+app.use('/pic', express.static(path.resolve('pic/')));
 
 //解析表单
 app.use(express.json());
