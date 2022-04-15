@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>杰杰后台管理系统</title>
     <link rel="stylesheet" href="/static/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/css/lightbox2.css">
 </head>
 
 <body>
@@ -19,6 +20,16 @@
         <div class="layui-body">
             <!-- 内容主体区域 -->
             <div style="padding: 15px;">
+                <button id="addDataBtn" type="button" class="layui-btn layui-btn-normal">
+                    <!-- <i class="layui-icon">&#xe654;</i> -->添加
+                </button>
+                <div class="demoTable" style="display: inline-block; margin-left: 20px;">
+                    <span>搜索：</span>
+                    <div class="layui-inline">
+                        <input class="layui-input" name="id" id="demoReload" autocomplete="off">
+                    </div>
+                    <button class="layui-btn" data-type="reload">搜索</button>
+                </div>
                 <table class="layui-hide" id="articleTable" lay-filter="test"></table>
             </div>
         </div>
@@ -29,8 +40,10 @@
         </div>
     </div>
     <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
         <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
     </script>
+    <script src="/static/js/lightbo2.js"></script>
     <script>
         //JS 
         layui.use(['element', 'layer', 'util', 'table'], function () {
@@ -39,24 +52,6 @@
                 util = layui.util,
                 $ = layui.$,
                 table = layui.table;
-
-            //头部事件
-            util.event('lay-header-event', {
-                //左侧菜单事件
-                menuLeft: function (othis) {
-                    layer.msg('展开左侧菜单的操作111', { icon: 0 });
-                }
-                , menuRight: function () {
-                    layer.open({
-                        type: 1
-                        , content: '<div style="padding: 15px;">处理右侧面板的操作234</div>'
-                        , area: ['260px', '100%']
-                        , offset: 'rt' //右上角
-                        , anim: 5
-                        , shadeClose: true
-                    });
-                }
-            });
 
             // 文章列表
             table.render({
@@ -72,18 +67,82 @@
                     { field: 'id', title: 'ID', width: '5%', unresize: true, sort: true },
                     { field: 'title', title: '标题', width: '10%', edit: 'text' },
                     {
-                        field: 'pic', title: '封面图', width: '10%', edit: 'text', sort: true, templet: ({ pic }) => {
-                            return `<img src="pic">`
+                        field: '', title: '封面图', width: '10%', sort: true, templet: ({ pic }) => {
+                            return `<a class="example-image-link" href="${pic}" 
+                            data-lightbox="example-set">
+                            <img class="example-image" src="${pic}" alt=""/></a>`
                         }
                     },
-                    { field: 'author', title: '作者', width: '10%' },
-                    { field: 'content', title: '内容', width: '20%' },
+                    { field: 'username', title: '作者', width: '10%' },
+                    {
+                        field: '', title: '内容', width: '10%', templet: function () {
+                            return `<div lay-event="lookContent">查看详情</div>`;
+                        }
+                    },
                     { field: 'status', title: '状态', width: '10%', sort: true },
-                    { field: 'add_date', title: '添加时间', width: '15%' },
+                    {
+                        field: 'add_date', title: '添加时间', width: '15%', templet: ({ add_date }) => {
+                            return layui.util.toDateString(add_date, 'yyyy年MM月dd日 HH:mm:ss');
+                        }
+                    },
                     { field: 'cate_name', title: '分类', width: '10%', sort: true },
-                    { title: '操作', toolbar: '#barDemo', width: 152 }
+                    { title: '操作', toolbar: '#barDemo', width: 145 }
                 ]],
                 page: true
+            });
+
+            // 监听行工具
+            table.on('tool(test)', function (obj) {
+                let data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('真的删除行么', function (index) {
+                        obj.del();
+                        let id = data.id;
+                        let pic = data.pic;
+
+                        $.get(`/delArtData`, { id, pic })
+                        layer.close(index);
+                    });
+                } else if (obj.event === 'edit') {
+                    let { id } = data;
+                    location.href = `/editArt/?id=${id}`;
+                } else if (obj.event === 'lookContent') {
+                    let { title, content, username, add_date } = data;
+                    add_date = layui.util.toDateString(add_date, 'yyyy年MM月dd日');
+                    content = `<div style="padding:15px">
+                                    <h2>${title}</h2>
+                                    <div>${add_date} ${username}</div>
+                                    ${content}
+                                </div>`;
+
+                    layer.open({
+                        title: '查看详情',
+                        shadeClose: true,
+                        content
+                    });
+                }
+            });
+
+
+            const addBtn = $('#addDataBtn');
+            addBtn.click(function () {
+                location.href = '/addArticle'
+            })
+
+            // 搜索
+            $('.demoTable .layui-btn').on('click', function () {
+                let searchVal = $('#demoReload').val();
+                table.reload('articleTable', {
+                    where: {
+                        keyword: searchVal
+                    }
+                })
+            });
+
+            // 图片灯箱
+            layer.photos({
+                photos: '#layer-photos-demo'
+                , anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机（请注意，3.0之前的版本用shift参数）
             });
         });
     </script>

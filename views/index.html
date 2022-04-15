@@ -71,6 +71,7 @@
             //分类 可视化
             // 获取分类数据
             let cateTotal = await $.get('/getCateTotal');
+            console.log(cateTotal);
             let cateNum = [];
             let cateName = [];
             cateTotal.result.forEach(item => {
@@ -83,7 +84,7 @@
             const cateCharset = echarts.init(document.getElementById('cateCharset'));
             const cateCharsetOption = {
                 title: {
-                    text: '分类总和'
+                    text: '文章数量'
                 },
                 tooltip: {},
                 legend: {

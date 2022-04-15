@@ -55,7 +55,7 @@ loginController.userExit = (req, res) => {
     });
 }
 
-
+// 设置用户信息
 loginController.setUsetInfo = async (req, res) => {
     let { id, username, intro } = req.body;
     const sql = `update users set username = '${username}',intro = '${intro}' where id = ${id}`;
@@ -76,6 +76,7 @@ loginController.setUsetInfo = async (req, res) => {
     res.json(resObj);
 }
 
+//  更新头像
 loginController.updatePic = async (req, res) => {
     let { id, oldpic } = req.body;
     const sql = `update users set avatar = '${req.filename}' where id = ${id}`
@@ -87,7 +88,7 @@ loginController.updatePic = async (req, res) => {
     if (updateRes.affectedRows > 0) {
         resObj.code = 200
         resObj.message = '修改成功'
-        resObj.pic = `/pic/${req.filename}`
+        resObj.pic = `${req.filename}`
         const sql = `select * from users where id = ${id}`;
         let result = await query(sql);
         res.cookie('userinfo', JSON.stringify(result[0]), {
@@ -95,8 +96,8 @@ loginController.updatePic = async (req, res) => {
         });
 
         // 删除原来头像
-        if (fs.existsSync('/pic/${oldpic}')) {
-            fs.unlink(`pic/${oldpic}`, (err) => {
+        if (fs.existsSync(`${oldpic}`.substring(1,))) {
+            fs.unlink(`${oldpic}`.substring(1,), (err) => {
                 if (err) { throw err };
             })
         } else {
@@ -106,6 +107,37 @@ loginController.updatePic = async (req, res) => {
     res.json(resObj);
 }
 
+// 修改密码
+loginController.setNewPW = async (req, res) => {
+    let { id, oldPW, newPW } = req.body;
+    oldPW = md5(`${oldPW}${password_secret}`);
+    const getUserPwsql = `SELECT password FROM users WHERE id = ${id}`
+    let [sqlOldPw] = await query(getUserPwsql);
+    sqlOldPw = sqlOldPw.password;
+    if (oldPW !== sqlOldPw) {
+        res.json({
+            code: 201,
+            msg: '旧密码错误'
+        })
+        return;
+    } else {
+        newPW = md5(`${newPW}${password_secret}`);
+        const updatePwsql = `update users set password = '${newPW}' where id = ${id}`;
+        let result = await query(updatePwsql);
+        if (result.affectedRows > 0) {
+            res.json({
+                code: 200,
+                msg: '密码修改成功'
+            })
+        } else {
+            res.json({
+                code: 200,
+                msg: '密码修改失败'
+            })
+        }
 
+    }
+
+}
 
 module.exports = loginController;

@@ -14,8 +14,8 @@
     <div class="login">
         <h1>小猪博客管理系统</h1>
         <form method="post" id="loginForm">
-            <input type="text" name="username" placeholder="Username" />
-            <input type="password" name="password" placeholder="Password" />
+            <input id="un" type="text" name="username" placeholder="Username" />
+            <input id="pw" type="password" name="password" placeholder="Password" />
         </form>
         <button type="submit" id="loginBtn" class="btn btn-primary btn-block btn-large">Login In</button>
     </div>
@@ -63,6 +63,22 @@
         })
         return false;
     }, 300, true))
+
+
+
+    $('#un').keyup(function (e) {
+        console.log(e);
+        if (e.keyCode === 13) {
+            $("#pw")[0].focus();
+        }
+    })
+
+    $('#pw').keyup(function (e) {
+        if (e.keyCode === 13) {
+            $("#loginBtn")[0].click();
+
+        }
+    })
 
 
     // $("#loginBtn").on('click', () => {

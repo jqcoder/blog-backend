@@ -32,7 +32,10 @@
 </style>
 <script src="/static/layui/layui.js"></script>
 <div class="layui-header">
-    <div class="layui-logo layui-hide-xs layui-bg-black" id="blog_name">小猪博客管理系统</div>
+    <div class="layui-logo layui-hide-xs layui-bg-black">
+        <img id="blog_logo" style="width: 30px;" src="" alt="">
+        <span id="blog_name">小猪博客管理系统</span>
+    </div>
     <!-- 头部区域（可配合layui 已有的水平导航） -->
     <ul class="layui-nav layui-layout-left">
         <!-- 移动端显示 -->
@@ -60,7 +63,7 @@
             </a>
             <dl class="layui-nav-child">
                 <dd><a href="JavaScript:;" id="userinfo">个人信息</a></dd>
-                <dd><a href="">修改密码</a></dd>
+                <dd><a href="javascript:;" id="setPassword">修改密码</a></dd>
                 <dd><a href="javascript:;" id="exit">退出</a></dd>
             </dl>
         </li>
@@ -78,7 +81,7 @@
 <script>
     // 获取用户信息
     let { id, username, avatar, intro } = JSON.parse(Cookies.get('userinfo'));
-    $('#userPic').attr('src', `/pic/${avatar}`);
+    $('#userPic').attr('src', `${avatar}`);
 
     function userForm() {
         let { id, username, avatar, intro } = JSON.parse(Cookies.get('userinfo'));
@@ -88,8 +91,8 @@
                     <label class="layui-form-label">头像</label>
                     <div class="layui-input-block">
                         <div class="avatar">
-                            <input type="file" id="fileBox" onchange="ImgUpdate(this)">
-                            <img src="/pic/${avatar}" alt="" id="demo">
+                            <input type="file" name="pid" id="fileBox" onchange="ImgUpdate(this)">
+                            <img src="${avatar}" alt="" id="demo">
                             <div>
                                 <button id="test">上传新头像</button>
                                 <p>支持jpg、png、gif格式</p>
@@ -119,9 +122,11 @@
     `
     }
 
-    // 博客名
+    // 博客名 & logo
     let blog_name = localStorage.getItem('blog_name');
     document.getElementById('blog_name').innerHTML = blog_name;
+    let blog_logo = localStorage.getItem('blog_logo');
+    document.getElementById('blog_logo').src = blog_logo;
 
     // 用户名显示
     document.getElementById('username').innerText = username;
@@ -178,6 +183,7 @@
     // 头像上传
     function ImgUpdate() {
         let { avatar } = JSON.parse(Cookies.get('userinfo'));
+        console.log(avatar);
         let formData = new FormData();
         formData.set('pic', fileBox.files[0]);
         formData.set('oldpic', avatar);
@@ -197,14 +203,78 @@
         })
     }
 
+    const setPWHTML = `
+    <div  style="width: 400px; padding:20px 0;">
+            <form class="layui-form" id="newPwForm">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">旧密码</label>
+                    <div class="layui-input-block">
+                        <input type="password" id="oldPW" name="username" value="" required lay-verify="required" placeholder="请输入旧密码" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">新密码</label>
+                    <div class="layui-input-block">
+                        <input type="password" id="newPW" name="username" value="" required lay-verify="required" placeholder="请输入新密码" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">重复确认</label>
+                    <div class="layui-input-block">
+                        <input type="password" id="rePW" name="username" value="" required lay-verify="required" placeholder="请重复输入" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" id="setNewPW" lay-submit lay-filter="formDemo">立即修改</button>
+                    </div>
+                </div>
+            </form> 
+        </div>  
+    `
     // 修改密码
-    layer.open({
-        type: 1,
-        title: '个人信息',
-        area: ['480px'], //宽高
-        shadeClose: true,
-        content: userForm(),
-    });
+    document.getElementById('setPassword').onclick = function () {
+        layer.open({
+            type: 1,
+            title: '修改密码',
+            area: ['480px'], //宽高
+            shadeClose: true,
+            content: setPWHTML
+        })
+    }
+
+    $(document).on('keyup', '#rePW', function () {
+        let newPW = $('#newPW').val();
+        let rePW = $('#rePW').val();
+        if (newPW !== rePW) {
+            layer.msg('两次密码不一致', { time: 200 });
+        }
+    })
+    $(document).on('click', '#setNewPW', function () {
+        let oldPW = $('#oldPW').val();
+        let newPW = $('#newPW').val();
+        let rePW = $('#rePW').val();
+        if (newPW !== rePW) {
+            layer.msg('两次密码不一致', { time: 200 });
+        } else {
+            $.ajax({
+                type: 'post',
+                url: '/setNewPW',
+                data: { id, oldPW, newPW }
+            }).then((res) => {
+                if (res.code === 200) {
+                    layer.msg('修改成功', { icon: 1 });
+                    setTimeout(() => {
+                        document.getElementById('exit').click();
+                    }, 500)
+                }
+            })
+        }
+        return false;
+    })
 
     // 退出
     document.getElementById('exit').onclick = function () {
